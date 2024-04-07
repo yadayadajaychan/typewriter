@@ -28,5 +28,4 @@ if __name__ == "__main__":
         print("Usage: ./script.py SERIAL_DEVICE")
         sys.exit(1)
 
-    dev = sys.argv[1]
-    write_to_serial(dev)
+    write_to_serial(sys.argv[1])

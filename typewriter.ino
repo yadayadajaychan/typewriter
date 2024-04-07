@@ -136,72 +136,72 @@ unsigned char ascii_table[128][3] = {
 unsigned char char_buf[buffer_size];
 
 void setup() {
-  for (int i = 0; i < 8; i++)
-    pinMode(input_table[i], INPUT_PULLUP);
+	for (int i = 0; i < 8; i++)
+		pinMode(input_table[i], INPUT_PULLUP);
 
-  for (int i = 0; i < 8; i++) {
-    pinMode(output_table[i], OUTPUT);
-    digitalWrite(output_table[i], LOW);
-  }
+	for (int i = 0; i < 8; i++) {
+		pinMode(output_table[i], OUTPUT);
+		digitalWrite(output_table[i], LOW);
+	}
 
-  Serial.begin(9600);
-  Serial.setTimeout(100); 
+	Serial.begin(9600);
+	Serial.setTimeout(100);
 }
 
 void writeMatrix(int input, int output)
 {
-  // temporary hack because inputs 6 and 7 don't work
-  int delay_ms = 0;
-  if (input == 7) {
-    input = 0;
-    delay_ms = 3;
-  } else if (input == 6) {
-    input = 0;
-    delay_ms = 5;
-  }
+	// temporary hack because inputs 6 and 7 don't work
+	int delay_ms = 0;
+	if (input == 7) {
+		input = 0;
+		delay_ms = 3;
+	} else if (input == 6) {
+		input = 0;
+		delay_ms = 5;
+	}
 
-  input = input_table[input];
-  output = output_table[output];
-  
-  for (int i = 0; i < 10;) {
-    if (digitalRead(input) == LOW) {
-      if (delay_ms > 0)
-        delay(delay_ms);
-      digitalWrite(output, HIGH);
-      delay(1);
-      digitalWrite(output, LOW);
-      i++;
-    }
-  }
+	input = input_table[input];
+	output = output_table[output];
+
+	for (int i = 0; i < 10;) {
+		if (digitalRead(input) == LOW) {
+			if (delay_ms > 0)
+				delay(delay_ms);
+			digitalWrite(output, HIGH);
+			delay(1);
+			digitalWrite(output, LOW);
+			i++;
+		}
+	}
 }
 
 void writeChar(unsigned char c)
 {
-  int input = ascii_table[c][0];
-  int output = ascii_table[c][1];
+	int input = ascii_table[c][0];
+	int output = ascii_table[c][1];
 
-  if (ascii_table[c][2])
-    writeMatrix(0, 7); // SHIFT
-  writeMatrix(input, output);
+	if (ascii_table[c][2])
+		writeMatrix(0, 7); // SHIFT
+	writeMatrix(input, output);
 
-  //Serial.print("Wrote: ");
-  //Serial.print(input);
-  //Serial.print(" ");
-  //Serial.println(output);
+	//Serial.print("Wrote: ");
+	//Serial.print(input);
+	//Serial.print(" ");
+	//Serial.println(output);
 }
 
 void loop() {
-  if (Serial.available() > 0) {
-    size_t size = Serial.readBytesUntil('\n', char_buf, buffer_size);
-    for (int i = 0; i < size; i++) {
-      writeChar(char_buf[i]);
-      delay(100);
-    }
-    
-    //if (char_buf[size-1] != '\n')
-      writeChar('\n');
-    delay(35*size + 150);
-    
-    Serial.println("DONE");
-  }
+	if (Serial.available() > 0) {
+		size_t size = Serial.readBytesUntil('\n', char_buf, buffer_size);
+		for (int i = 0; i < size; i++) {
+			writeChar(char_buf[i]);
+			delay(100);
+		}
+
+		//if (char_buf[size-1] != '\n')
+			writeChar('\n');
+		delay(35*size + 150);
+
+		Serial.println("DONE");
+	}
 }
