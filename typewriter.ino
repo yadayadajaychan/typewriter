@@ -1,7 +1,4 @@
-const int input_table[8] = {14, 15, 16, 17, 18, 19, 20, 21};
-const int output_table[8] = {2, 3, 4, 5, 6, 7, 8, 9};
-
-unsigned char ascii_table[128][3] = {
+const unsigned char ascii_table[128][3] = {
 	{4,1,0}, // 0x00 NUL
 	{4,1,0}, // 0x01 SOH
 	{4,1,0}, // 0x02 STX
@@ -131,6 +128,9 @@ unsigned char ascii_table[128][3] = {
 	{4,1,0}, // 0x7E ~
 	{4,1,0}, // 0x7F DEL
 };
+
+const unsigned char input_table[8] = {14, 15, 16, 17, 18, 19, 20, 21};
+const unsigned char output_table[8] = {2, 3, 4, 5, 6, 7, 8, 9};
 
 #define buffer_size 80
 unsigned char char_buf[buffer_size];
