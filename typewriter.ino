@@ -135,7 +135,13 @@ const unsigned char output_table[8] = {2, 3, 4, 5, 6, 7, 8, 9};
 #define buffer_size 80
 unsigned char char_buf[buffer_size];
 
-void setup() {
+int column = 1;
+
+void writeMatrix(unsigned char input, unsigned char output);
+void writeChar(unsigned char c);
+
+void setup()
+{
 	for (int i = 0; i < 8; i++)
 		pinMode(input_table[i], INPUT_PULLUP);
 
@@ -144,14 +150,49 @@ void setup() {
 		digitalWrite(output_table[i], LOW);
 	}
 
-	Serial.begin(9600);
+	Serial.begin(9600, SERIAL_8E2);
 	Serial.setTimeout(100);
+	Serial.println("READY");
 }
 
-void writeMatrix(int input, int output)
+void loop()
+{
+	/*
+	if (Serial.available() > 0) {
+		size_t size = Serial.readBytesUntil('\n', char_buf, buffer_size);
+		for (int i = 0; i < size; i++) {
+			writeChar(char_buf[i]);
+			delay(100);
+		}
+
+		//if (char_buf[size-1] != '\n')
+			writeChar('\n');
+		delay(35*size + 150);
+
+		Serial.println("DONE");
+	}
+	*/
+
+	if (Serial.available() > 0) {
+		unsigned char ch = Serial.read();
+		writeChar(ch);
+		Serial.println("OK");
+
+		if (ch == '\n') {
+			delay(35*(int)column + 200);
+			column = 1;
+		} else {
+			column++;
+		}
+
+		delay(100);
+	}
+}
+
+void writeMatrix(unsigned char input, unsigned char output)
 {
 	// temporary hack because inputs 6 and 7 don't work
-	int delay_ms = 0;
+	unsigned char delay_ms = 0;
 	if (input == 7) {
 		input = 0;
 		delay_ms = 3;
@@ -177,8 +218,8 @@ void writeMatrix(int input, int output)
 
 void writeChar(unsigned char c)
 {
-	int input = ascii_table[c][0];
-	int output = ascii_table[c][1];
+	unsigned char input = ascii_table[c][0];
+	unsigned char output = ascii_table[c][1];
 
 	if (ascii_table[c][2])
 		writeMatrix(0, 7); // SHIFT
@@ -190,18 +231,4 @@ void writeChar(unsigned char c)
 	//Serial.println(output);
 }
 
-void loop() {
-	if (Serial.available() > 0) {
-		size_t size = Serial.readBytesUntil('\n', char_buf, buffer_size);
-		for (int i = 0; i < size; i++) {
-			writeChar(char_buf[i]);
-			delay(100);
-		}
 
-		//if (char_buf[size-1] != '\n')
-			writeChar('\n');
-		delay(35*size + 150);
-
-		Serial.println("DONE");
-	}
-}

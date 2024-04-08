@@ -3,21 +3,50 @@ import serial
 import time
 import sys
 
-def write_to_serial(port):
+def open_serial(port):
     try:
-        ser = serial.Serial(port, 9600)
-        time.sleep(2)
+        ser = serial.Serial(port, 9600, serial.EIGHTBITS, serial.PARITY_EVEN, serial.STOPBITS_TWO, 5)
+        return ser
     except serial.SerialException:
         print(f"Error: Could not open serial port {port}.")
         return
 
+def wait_until_ready(ser):
+    while ser.readline() != b'READY\r\n':
+        time.sleep(0.1)
+
+def write_char(ser, ch):
+    ser.write(ch.encode())
+    return ser.readline()
+
+def write_to_serial(port):
+    # open serial port
+    ser = open_serial(port)
+    if not ser:
+        return
+
+    wait_until_ready(ser)
+
     while True:
         try:
-            line = sys.stdin.readline()
-            if not line:
+            ch = sys.stdin.read(1)
+            if not ch:
                 break
-            ser.write(line.encode())
-            response = ser.readline()
+
+            response = write_char(ser, ch)
+
+            retries = 0
+            while response != b'OK\r\n' and retries < 3:
+                retries += 1
+                print("NO RESPONSE FROM SERIAL PORT")
+                print(f"RETRYING ({retries}/3)...")
+                ser.close()
+                ser = open_serial(port)
+                if not ser:
+                    return
+                wait_until_ready(ser)
+                response = write_char(ser, ch)
+
         except KeyboardInterrupt:
             break
 
