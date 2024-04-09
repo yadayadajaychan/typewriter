@@ -12,7 +12,7 @@ const unsigned char ascii_table[128][3] = {
 	{1,6,0}, // 0x0A LF
 	{4,1,0}, // 0x0B VT
 	{4,1,0}, // 0x0C FF
-	{4,1,0}, // 0x0D CR
+	{1,6,0}, // 0x0D CR
 	{4,1,0}, // 0x0E SO
 	{4,1,0}, // 0x0F SI
 	{4,1,0}, // 0x10 DLE
@@ -59,9 +59,9 @@ const unsigned char ascii_table[128][3] = {
 	{7,0,0}, // 0x39 9
 	{4,7,1}, // 0x3A :
 	{4,7,0}, // 0x3B ;
-	{4,1,0}, // 0x3C <
+	{3,6,0}, // 0x3C <
 	{6,1,0}, // 0x3D =
-	{4,1,0}, // 0x3E >
+	{5,2,0}, // 0x3E >
 	{7,6,1}, // 0x3F ?
 	{6,5,1}, // 0x40 @
 	{2,6,1}, // 0x41 A
@@ -223,6 +223,8 @@ void writeChar(unsigned char c)
 
 	if (ascii_table[c][2])
 		writeMatrix(0, 7); // SHIFT
+	else if (c == '<' || c == '>' || c == '\r')
+		writeMatrix(1, 0); // CODE
 	writeMatrix(input, output);
 
 	//Serial.print("Wrote: ");
