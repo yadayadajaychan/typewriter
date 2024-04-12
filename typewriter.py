@@ -44,6 +44,7 @@ def write_to_serial(port):
 
     while True:
         try:
+            time.sleep(0.050)
             ch = sys.stdin.read(1)
             if not ch:
                 break

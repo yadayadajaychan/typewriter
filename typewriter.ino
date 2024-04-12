@@ -146,10 +146,9 @@ const unsigned char ascii_table[128][3] = {
 const unsigned char input_table[8] = {14, 15, 16, 17, 18, 19, 20, 21};
 const unsigned char output_table[8] = {2, 3, 4, 5, 6, 7, 8, 9};
 
-#define buffer_size 80
-unsigned char char_buf[buffer_size];
-
-int column = 1;
+unsigned short column = 1;
+unsigned short delay_char = 100;
+bool escape = false;
 
 void writeMatrix(unsigned char input, unsigned char output);
 void writeChar(unsigned char c);
@@ -171,40 +170,40 @@ void setup()
 
 void loop()
 {
-	/*
-	if (Serial.available() > 0) {
-		size_t size = Serial.readBytesUntil('\n', char_buf, buffer_size);
-		for (int i = 0; i < size; i++) {
-			writeChar(char_buf[i]);
-			delay(100);
-		}
-
-		//if (char_buf[size-1] != '\n')
-			writeChar('\n');
-		delay(35*size + 150);
-
-		Serial.println("DONE");
-	}
-	*/
-
 	if (Serial.available() > 0) {
 		unsigned char ch = Serial.read();
+
+		/*
+		// check for ansi escape sequence
+		if (ch == '[' && escape) {
+			escape = false;
+			escape_handler();
+		} else if (ch == 0x1b) {
+			escape = true;
+		} else {
+			escape = false;
+		}
+		*/
+
 		writeChar(ch);
 		Serial.println("OK");
 
 		if (ch == '\n') {
-			delay(35*(int)column + 200);
+			delay(35*column + 200);
 			column = 1;
 		} else {
 			column++;
 		}
 
-		delay(100);
+		//delay(delay_char);
 	}
 }
 
 void writeMatrix(unsigned char input, unsigned char output)
 {
+	if (input >= 8 || output >= 8)
+		return;
+
 	// temporary hack because inputs 6 and 7 don't work
 	unsigned char delay_ms = 0;
 	if (input == 7) {
@@ -232,6 +231,9 @@ void writeMatrix(unsigned char input, unsigned char output)
 
 void writeChar(unsigned char c)
 {
+	if (c >= 128)
+		return;
+
 	unsigned char input = ascii_table[c][0];
 	unsigned char output = ascii_table[c][1];
 
