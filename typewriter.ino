@@ -146,7 +146,7 @@ const unsigned char ascii_table[128][3] = {
 const unsigned char input_table[8] = {A0, A1, A2, A3, A4, A5, A6, A7};
 const unsigned char output_table[8] = {2, 3, 4, 5, 6, 7, 8, 9};
 
-unsigned short column = 1;
+unsigned short column = 0;
 unsigned short delay_char = 100;
 bool escape = false;
 
@@ -190,12 +190,6 @@ void loop()
 		writeChar(ch);
 		Serial.write(ch);
 
-		if (ch == '\n') {
-			delay(35*column + 200);
-			column = 1;
-		} else {
-			column++;
-		}
 
 		//delay(delay_char);
 	}
@@ -297,12 +291,31 @@ void writeChar(unsigned char c)
 	unsigned char input = ascii_table[c][0];
 	unsigned char output = ascii_table[c][1];
 
-	if (ascii_table[c][2])
+	if (ascii_table[c][2]) {
 		writeMatrix(0, 7, input, output); // SHIFT
-	else if (c == '<' || c == '>' || c == '\r')
+		column++;
+	} else if (c == '<' || c == '>') {
 		writeMatrix(1, 0, input, output); // CODE
-	else
+		column++;
+	} else if (c == '\r') {
+		writeMatrix(1, 0, input, output); // CODE
+		delay(35*column + 200);
+		column = 0;
+	} else if (c == '\n') {
 		writeMatrix(input, output);
+		delay(35*column + 200);
+		column = 0;
+	} else if (c == '\t') {
+		unsigned short diff_col = 8 - (column % 8);
+		for (int i = 0; i < diff_col; i++) {
+			writeMatrix(1, 7);
+			delay(50);
+			column++;
+		}
+	} else {
+		writeMatrix(input, output);
+		column++;
+	}
 }
 
 
