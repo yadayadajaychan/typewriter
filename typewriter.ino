@@ -151,6 +151,8 @@ unsigned short delay_char = 100;
 bool escape = false;
 
 void writeMatrix(unsigned char input, unsigned char output);
+void writeMatrix(unsigned char mod_input, unsigned char mod_output,
+                 unsigned char input, unsigned char output);
 void writeChar(unsigned char c);
 
 void setup()
@@ -229,6 +231,64 @@ void writeMatrix(unsigned char input, unsigned char output)
 	}
 }
 
+void writeMatrix(unsigned char mod_input, unsigned char mod_output,
+                 unsigned char input, unsigned char output)
+{
+	if (mod_input >= 2 || mod_output >= 8 || input >= 8 || output >= 8)
+		return;
+
+	unsigned char delay_ms;
+	if (mod_input == input) {
+		delay_ms = 0;
+	} else {
+		unsigned char diff;
+		if (mod_input > input)
+			diff = mod_input - input;
+		else
+			diff = input - mod_input;
+		diff = 8 - diff;
+
+		delay_ms = diff * 2;
+	}
+
+	mod_input = input_table[mod_input];
+	mod_output = output_table[mod_output];
+	input = input_table[input];
+	output = output_table[output];
+
+	for (int i = 0; i < 10;) {
+		if (digitalRead(mod_input) == LOW) {
+			digitalWrite(mod_output, HIGH);
+			delay(1);
+			digitalWrite(mod_output, LOW);
+			i++;
+		}
+	}
+
+	for (int i = 0; i < 10;) {
+		if (digitalRead(mod_input) == LOW) {
+			if (delay_ms == 0) {
+				digitalWrite(mod_output, HIGH);
+				digitalWrite(output, HIGH);
+				delay(1);
+				digitalWrite(mod_output, LOW);
+				digitalWrite(output, LOW);
+			} else {
+				digitalWrite(mod_output, HIGH);
+				delay(1);
+				digitalWrite(mod_output, LOW);
+
+				delay(delay_ms);
+
+				digitalWrite(output, HIGH);
+				delay(1);
+				digitalWrite(output, LOW);
+			}
+			i++;
+		}
+	}
+}
+
 void writeChar(unsigned char c)
 {
 	if (c >= 128)
@@ -238,15 +298,11 @@ void writeChar(unsigned char c)
 	unsigned char output = ascii_table[c][1];
 
 	if (ascii_table[c][2])
-		writeMatrix(0, 7); // SHIFT
+		writeMatrix(0, 7, input, output); // SHIFT
 	else if (c == '<' || c == '>' || c == '\r')
-		writeMatrix(1, 0); // CODE
-	writeMatrix(input, output);
-
-	//Serial.print("Wrote: ");
-	//Serial.print(input);
-	//Serial.print(" ");
-	//Serial.println(output);
+		writeMatrix(1, 0, input, output); // CODE
+	else
+		writeMatrix(input, output);
 }
 
 
