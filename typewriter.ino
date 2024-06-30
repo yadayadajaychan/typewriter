@@ -143,7 +143,7 @@ const unsigned char ascii_table[128][3] = {
 	{4,1,0}, // 0x7F DEL
 };
 
-const unsigned char input_table[8] = {14, 15, 16, 17, 18, 19, 20, 21};
+const unsigned char input_table[8] = {A0, A1, A2, A3, A4, A5, A6, A7};
 const unsigned char output_table[8] = {2, 3, 4, 5, 6, 7, 8, 9};
 
 unsigned short column = 1;
@@ -163,7 +163,7 @@ void setup()
 		digitalWrite(output_table[i], LOW);
 	}
 
-	Serial.begin(9600, SERIAL_8E2);
+	Serial.begin(9600, SERIAL_8N1);
 	Serial.setTimeout(100);
 	Serial.println("READY");
 }
@@ -186,7 +186,7 @@ void loop()
 		*/
 
 		writeChar(ch);
-		Serial.println("OK");
+		Serial.write(ch);
 
 		if (ch == '\n') {
 			delay(35*column + 200);

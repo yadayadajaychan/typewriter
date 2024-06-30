@@ -20,7 +20,7 @@ import sys
 
 def open_serial(port):
     try:
-        ser = serial.Serial(port, 9600, serial.EIGHTBITS, serial.PARITY_EVEN, serial.STOPBITS_TWO, 5)
+        ser = serial.Serial(port, 9600, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE, 10)
         return ser
     except serial.SerialException:
         print(f"Error: Could not open serial port {port}.")
@@ -32,7 +32,7 @@ def wait_until_ready(ser):
 
 def write_char(ser, ch):
     ser.write(ch.encode())
-    return ser.readline()
+    return ser.read()
 
 def write_to_serial(port):
     # open serial port
@@ -52,7 +52,7 @@ def write_to_serial(port):
             response = write_char(ser, ch)
 
             retries = 0
-            while response != b'OK\r\n' and retries < 3:
+            while response != ch.encode() and retries < 3:
                 retries += 1
                 print("NO RESPONSE FROM SERIAL PORT")
                 print(f"RETRYING ({retries}/3)...")
