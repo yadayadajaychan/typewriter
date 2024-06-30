@@ -107,7 +107,7 @@ const unsigned char ascii_table[128][3] = {
 	{3,7,1}, // 0x5B [
 	{4,1,0}, // 0x5C BACKSLASH
 	{3,7,0}, // 0x5D ]
-	{4,1,0}, // 0x5E ^
+	{6,2,1}, // 0x5E ^
 	{7,1,1}, // 0x5F _
 	{4,1,0}, // 0x60 `
 	{2,6,0}, // 0x61 a
@@ -312,6 +312,15 @@ void writeChar(unsigned char c)
 			delay(50);
 			column++;
 		}
+	} else if (c == '\b') {
+		writeMatrix(input, output);
+		column--;
+	} else if (c < 32) { // control characters
+		writeChar('^');
+		writeChar(c | 0x40);
+	} else if (c == 127) { // DEL character
+		writeChar('^');
+		writeChar('?');
 	} else {
 		writeMatrix(input, output);
 		column++;
