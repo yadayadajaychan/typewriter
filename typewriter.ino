@@ -157,6 +157,11 @@ void writeMatrix(unsigned char mod_input, unsigned char mod_output,
                  unsigned char input, unsigned char output);
 void writeChar(unsigned char c);
 
+void cursorUp(int n);
+void cursorDown(int n);
+void cursorForward(int n);
+void cursorBack(int n);
+
 void SGR(int n);
 void boldOn();
 void boldOff();
@@ -243,6 +248,18 @@ void escapeHandler()
 		return;
 
 	switch (final) {
+	case 'A':
+		cursorUp(atoi(parameter));
+		break;
+	case 'B':
+		cursorDown(atoi(parameter));
+		break;
+	case 'C':
+		cursorForward(atoi(parameter));
+		break;
+	case 'D':
+		cursorBack(atoi(parameter));
+		break;
 	case 'm':
 		SGR(atoi(parameter));
 		break;
@@ -428,6 +445,50 @@ void writeChar(unsigned char c)
 	} else {
 		writeMatrix(input, output);
 		column++;
+	}
+}
+
+void cursorUp(int n)
+{
+	if (n <= 0)
+		n = 1;
+
+	for (int i = 0; i < n*2; i++) {
+		writeMatrix(1, 0, 5, 3); // CODE + O = REV
+		delay(50);
+	}
+}
+
+void cursorDown(int n)
+{
+	if (n <= 0)
+		n = 1;
+
+	for (int i = 0; i < n*2; i++) {
+		writeMatrix(1, 0, 3, 3); // CODE + P = INDEX
+		delay(50);
+	}
+}
+
+void cursorForward(int n)
+{
+	if (n <= 0)
+		n = 1;
+
+	for (int i = 0; i < n; i++) {
+		writeChar(' ');
+		delay(50);
+	}
+}
+
+void cursorBack(int n)
+{
+	if (n <= 0)
+		n = 1;
+
+	for (int i = 0; i < n; i++) {
+		writeChar('\b');
+		delay(50);
 	}
 }
 
