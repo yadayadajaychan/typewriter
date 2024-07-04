@@ -147,13 +147,21 @@ const unsigned char input_table[8] = {A0, A1, A2, A3, A4, A5, A6, A7};
 const unsigned char output_table[8] = {2, 3, 4, 5, 6, 7, 8, 9};
 
 unsigned short column = 0;
-unsigned short delay_char = 100;
-bool escape = false;
+bool bold = false;
+bool underline = false;
 
+unsigned char blockingRead();
+void escapeHandler();
 void writeMatrix(unsigned char input, unsigned char output);
 void writeMatrix(unsigned char mod_input, unsigned char mod_output,
                  unsigned char input, unsigned char output);
 void writeChar(unsigned char c);
+
+void SGR(int n);
+void boldOn();
+void boldOff();
+void underlineOn();
+void underlineOff();
 
 void setup()
 {
@@ -175,24 +183,77 @@ void loop()
 	if (Serial.available() > 0) {
 		unsigned char ch = Serial.read();
 
-		/*
-		// check for ansi escape sequence
-		if (ch == '[' && escape) {
-			escape = false;
-			escape_handler();
-		} else if (ch == 0x1b) {
-			escape = true;
+		if (ch == '\x1b') {
+			Serial.write(ch);
+			escapeHandler();
 		} else {
-			escape = false;
+			writeChar(ch);
+			Serial.write(ch);
 		}
-		*/
 
-		writeChar(ch);
-		Serial.write(ch);
-
-
-		//delay(delay_char);
 	}
+}
+
+void escapeHandler()
+{
+	unsigned char ch = blockingRead();
+	if (ch != '[') { // not CSI
+		writeChar('\x1b');
+		writeChar(ch);
+		return;
+	}
+
+	unsigned char parameter[32];
+	int parameter_index = 0;
+
+	unsigned char intermediate[32];
+	int intermediate_index = 0;
+
+	unsigned char final = 0;
+
+	while (true) {
+		ch = blockingRead();
+		if (ch < 0x20 || ch > 0x7e)
+			return;
+		else if (ch >= 0x30 && ch <= 0x3f)
+			parameter[parameter_index++] = ch;
+		else
+			break;
+	}
+	parameter[parameter_index++] = '\0';
+
+	while (true) {
+		if (ch < 0x20 || ch > 0x7e)
+			return;
+		else if (ch >= 0x20 && ch <= 0x2f)
+			intermediate[intermediate_index++] = ch;
+		else
+			break;
+		ch = blockingRead();
+	}
+	intermediate[intermediate_index++] = '\0';
+
+	if (ch < 0x20 || ch > 0x7e)
+		return;
+	else
+		final = ch;
+
+	switch (final) {
+	case 'm':
+		SGR(atoi(parameter));
+		break;
+	default:
+		break;
+	}
+}
+
+unsigned char blockingRead()
+{
+	while (Serial.available() == 0)
+		;
+	unsigned char ch = Serial.read();
+	Serial.write(ch);
+	return ch;
 }
 
 void writeMatrix(unsigned char input, unsigned char output)
@@ -327,4 +388,58 @@ void writeChar(unsigned char c)
 	}
 }
 
+void SGR(int n)
+{
+	switch (n) {
+	case 0:
+		boldOff();
+		underlineOff();
+		break;
+	case 1:
+		boldOn();
+		break;
+	case 4:
+		underlineOn();
+		break;
+	case 22:
+		boldOff();
+		break;
+	case 24:
+		underlineOff();
+		break;
+	default:
+		break;
+	}
+}
 
+void boldOn()
+{
+	if (!bold) {
+		writeMatrix(1, 3, 1, 4); // ALT + RELOC
+		bold = true;
+	}
+}
+
+void boldOff()
+{
+	if (bold) {
+		writeMatrix(1, 3, 1, 4); // ALT + RELOC
+		bold = false;
+	}
+}
+
+void underlineOn()
+{
+	if (!underline) {
+		writeMatrix(1, 3, 6, 1); // ALT + =
+		underline = true;
+	}
+}
+
+void underlineOff()
+{
+	if (underline) {
+		writeMatrix(1, 3, 6, 1); // ALT + =
+		underline = false;
+	}
+}
