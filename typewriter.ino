@@ -107,9 +107,9 @@ const unsigned char ascii_table[128][3] = {
 	{3,7,1}, // 0x5B [
 	{4,1,0}, // 0x5C BACKSLASH
 	{3,7,0}, // 0x5D ]
-	{6,2,1}, // 0x5E ^
+	{4,1,0}, // 0x5E ^
 	{7,1,1}, // 0x5F _
-	{4,1,0}, // 0x60 `
+	{2,7,0}, // 0x60 `
 	{2,6,0}, // 0x61 a
 	{3,0,0}, // 0x62 b
 	{4,0,0}, // 0x63 c
@@ -237,10 +237,10 @@ void escapeHandler()
 	}
 	intermediate[intermediate_index++] = '\0';
 
-	if (ch < 0x20 || ch > 0x7e)
-		return;
-	else
+	if (ch >= 0x40 && ch <= 0x7e)
 		final = ch;
+	else
+		return;
 
 	switch (final) {
 	case 'm':
@@ -380,6 +380,45 @@ void writeChar(unsigned char c)
 	} else if (c == '\b') {
 		writeMatrix(input, output);
 		column--;
+	} else if (c == '|') {
+		writeChar('\'');
+		delay(50);
+		writeChar('\b');
+		delay(50);
+		writeMatrix(1, 0, 3, 3); // CODE + P = INDEX
+		delay(50);
+		writeChar('\'');
+		delay(50);
+		writeMatrix(1, 0, 5, 3); // CODE + O = REV
+	} else if (c == '{' || c == '}') {
+		writeChar(c == '{' ? '(' : ')');
+		delay(50);
+		writeChar('\b');
+		delay(50);
+		writeChar('=');
+	} else if (c == '^') {
+		writeChar('*');
+		delay(50);
+		writeChar('\b');
+		delay(50);
+		writeChar('"');
+		delay(50);
+		writeChar('\b');
+		delay(50);
+		writeChar('\'');
+	} else if (c == '\\') {
+		writeChar('[');
+		delay(50);
+		writeChar('\b');
+		delay(50);
+		writeChar(']');
+	} else if (c == '~') {
+		writeChar('=');
+		delay(50);
+		writeChar('\b');
+		delay(50);
+		writeMatrix(0, 7, 6, 6); // degree symbol
+		column++;
 	} else if (c < 32) { // control characters
 		writeChar('^');
 		writeChar(c | 0x40);
