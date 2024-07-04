@@ -188,6 +188,10 @@ void loop()
 			escapeHandler();
 		} else {
 			writeChar(ch);
+			if (underline)
+				delay(100);
+			if (bold)
+				delay(200);
 			Serial.write(ch);
 		}
 
