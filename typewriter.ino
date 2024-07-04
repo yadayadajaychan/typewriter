@@ -146,7 +146,7 @@ const unsigned char ascii_table[128][3] = {
 const unsigned char input_table[8] = {A0, A1, A2, A3, A4, A5, A6, A7};
 const unsigned char output_table[8] = {2, 3, 4, 5, 6, 7, 8, 9};
 
-unsigned short column = 0;
+int column = 0;
 bool bold = false;
 bool underline = false;
 
@@ -474,6 +474,8 @@ void cursorForward(int n)
 {
 	if (n <= 0)
 		n = 1;
+	if (column+n > 110)
+		n = 110 - column;
 
 	for (int i = 0; i < n; i++) {
 		writeChar(' ');
@@ -485,6 +487,10 @@ void cursorBack(int n)
 {
 	if (n <= 0)
 		n = 1;
+	if (column-n <= 0) {
+		writeChar('\r');
+		return;
+	}
 
 	for (int i = 0; i < n; i++) {
 		writeChar('\b');
