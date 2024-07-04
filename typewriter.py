@@ -20,7 +20,7 @@ import sys
 
 def open_serial(port):
     try:
-        ser = serial.Serial(port, 9600, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE, 10)
+        ser = serial.Serial(port, 9600, serial.EIGHTBITS, serial.PARITY_NONE, serial.STOPBITS_ONE, 60)
         return ser
     except serial.SerialException:
         print(f"Error: Could not open serial port {port}.")
